@@ -4,18 +4,15 @@ admin.initializeApp();
 const fcm = admin.messaging();
 
 export const sendNotification = functions.firestore
-  .document("notiTokens/{token}")
+  .document("messages/{docId}")
   .onCreate(async snapshot => {
-    const name = snapshot.get("from");
     const payload: admin.messaging.MessagingPayload = {
       notification: {
-        title: `New message from ${name}`,
+        title: snapshot.get("sender_name"),
         body: snapshot.get("message"),
         clickAction: "FLUTTER_NOTIFICATION_CLICK"
       }
     };
 
-    const token: string = snapshot.get("token");
-
-    return fcm.sendToDevice(token, payload);
+    return fcm.sendToTopic("messages", payload);
   });
